@@ -184,6 +184,55 @@ shapeAI.put("/book/update/:isbn",(req,res)=>{
   return res.json({books:database.books});
 });
 
+/*
+Route          /book/author/update/
+Description    To update/add new author
+Access         PUBLIC
+Parameters     :isbn
+Methods        PUT
+*/
+
+shapeAI.put("/book/author/update/:isbn",(req,res)=>{
+  // update book database
+   database.books.forEach((book)=>{
+    if(book.ISBN===req.params.isbn)
+    return book.authors.push(req.body.newAuthor);
+   });
+  // update author database
+  database.authors.forEach((author)=>{
+    if(author.id===req.body.newAuthor)
+    return author.books.push(req.params.isbn);
+  });
+  return res.json({books:database.books,authors:database.authors,message:"New Author was Added",});
+});
+
+/*
+Route          /publication/update/book/
+Description    update/add new book to a publication
+Access         PUBLIC
+Parameters     :isbn
+Methods        PUT
+*/
+
+shapeAI.put("/publication/update/book/:isbn",(req,res)=>{
+  // update the publication database
+  database.publications.forEach((publication)=>{
+    if(publication.id===req.body.pubID)
+    {
+      return publication.books.push(req.params.isbn);
+    }
+  });
+  // update the book database
+  database.books.forEach((book)=>{
+    if(book.ISBN===req.params.isbn)
+    {
+      book.publication=req.body.pubID;
+      return;
+    }
+  });
+  return res.json({books:database.books,publications:database.publications,
+  message:"Successfully Updated Publication",});
+});
 
 // Start the server and listen on port 3000
 
