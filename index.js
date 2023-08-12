@@ -1,14 +1,24 @@
+require("dotenv").config();
 // Framework
 const express = require("express");
 
+const mongoose=require("mongoose");
 // Database
 const database = require("./databases/index");
+const { Mongoose } = require("mongoose");
 
 // Instance of express
 const shapeAI = express();
 
 // Configuration
 shapeAI.use(express.json());
+
+// Establish Database Connection
+mongoose.connect(process.env.MONGO_URL,{
+  useFindAndModify: false,
+  useCreateIndex: true
+}
+).then(()=>console.log("Connection is established!!!!"));
 
 /*
 Route         / (root)
@@ -222,7 +232,7 @@ shapeAI.put("/publication/update/book/:isbn",(req,res)=>{
       return publication.books.push(req.params.isbn);
     }
   });
-  // update the book database
+  // update the book database replace the publication in books database
   database.books.forEach((book)=>{
     if(book.ISBN===req.params.isbn)
     {
@@ -234,6 +244,95 @@ shapeAI.put("/publication/update/book/:isbn",(req,res)=>{
   message:"Successfully Updated Publication",});
 });
 
+/*
+Route          /book/delete
+Description    to delete a book
+Access         PUBLIC
+Parameters     :isbn
+Methods        DELETE
+*/
+// it will not work as book is const in database so change it to let to get modify
+shapeAI.delete("/book/delete/:isbn",(req,res)=>{
+  const updatedBookDatabase = database.books.filter((book) => {
+    return book.ISBN !== req.params.isbn;
+  });
+
+  database.books = updatedBookDatabase;
+  return res.json({ message: "Book deleted successfully", books: database.books });
+});
+
+/*
+Route          /book/delete/author
+Description    delete a author from a book
+Access         PUBLIC
+Parameters     :isbn , author id
+Methods        DELETE
+*/
+
+shapeAI.delete("/book/delete/author/:isbn/:authorId",(req,res)=>{
+  // update the Book Database
+  database.books.forEach((book)=>{
+   if(book.ISBN===req.params.isbn)
+   {
+    const newAuthorList=book.authors.filter(
+      (author)=>author!==parseInt(req.params.authorId)
+    );
+    book.authors=newAuthorList;
+    return;
+   }
+  });
+
+  //  update author database
+  database.authors.forEach((author)=>{
+    if(author.id===parseInt(req.params.authorId))
+    {
+      const newBookList=author.books.filter(
+        (book)=>book!==req.params.isbn);
+        author.books=newBookList;
+        return;
+    }   
+  });
+  return res.json({
+    message:"Author was deleted",
+    book:database.books,
+    author:database.authors
+  });
+});
+
+/*
+Route          /publication/delete/book
+Description    delete a book from publication
+Access         PUBLIC
+Parameters     :isbn , publication id
+Methods        DELETE
+*/
+
+shapeAI.delete("/publication/delete/book/:isbn/:pubId",(req,res)=>{
+  //  update publication database
+  database.publications.forEach((publication)=>{
+    if(publication.id===parseInt(req.params.pubId)){
+      const newBookList=publication.books.filter((book)=>
+      book!==req.params.isbn);
+      publication.books=newBookList;
+      return;
+    }
+  });
+
+  // update book database
+  database.books.forEach((book)=>{
+  if(book.ISBN===req.params.isbn){
+    book.publication=0;
+    return;
+  }
+  });
+  return res.json({books:database.books,publications:database.publications});
+});
+
 // Start the server and listen on port 3000
 
 shapeAI.listen(3000, () => console.log("Server is running!!!!"));
+
+// Talk to mongoDB in which they understand=> *****
+// Talk to us in which we understand =>javascript
+
+// then comes Mongoose
