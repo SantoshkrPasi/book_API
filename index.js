@@ -40,8 +40,9 @@ Methods       GET
 */
 
 // Route to get all books
-shapeAI.get("/", (req, res) => {
-  return res.json({ books: database.books });
+shapeAI.get("/", async(req, res) => {
+  const getAllBooks = await BookModels.find();
+  return res.json(getAllBooks);
 });
 
 /*
@@ -52,17 +53,23 @@ Parameters     isbn
 Methods        GET
 */
 
-shapeAI.get("/is/:isbn",(req,res)=>{
-    const getSpecificBook=database.books.filter((book)=>
-    book.ISBN===req.params.isbn);
-    if(getSpecificBook.length===0)
+shapeAI.get("/is/:isbn",async (req,res)=>{
+      //  With mongoose
+    const getSpecificBook = await BookModels.findOne({ISBN:req.params.isbn});
+
+    // WITHOUT MONGOOSE
+    // const getSpecificBook=database.books.filter((book)=>
+    // book.ISBN===req.params.isbn);
+
+      // NULL -> false (so make it true to enter in if condition)
+      // true will be converted as false and it will not enter in the if condition and else will be executed
+
+    if(!getSpecificBook)
     {
         return res.json({error:`No book found for the ISBN for ${req.params.isbn}`,});
     }
     // obj have key=book and Value=getSpecifiedBook
     return res.json({book:getSpecificBook});
-    
-
 });
 
 /*
@@ -73,11 +80,15 @@ Parameters     category
 Methods        GET
 */
 
-shapeAI.get("/c/:category",(req,res)=>{
-  const getSpecificBooks=database.books.filter((book)=>
-    book.category.includes(req.params.category)
-    );
-    if(getSpecificBooks.length===0)
+shapeAI.get("/c/:category",async (req,res)=>{
+  // with Mongoose
+  const getSpecificBooks = await BookModels.findOne({category:req.params.category,});
+  // Without moongoose
+  // const getSpecificBooks=database.books.filter((book)=>
+  //   book.category.includes(req.params.category)
+  //   );
+
+    if(!getSpecificBooks)
     {
         return res.json({error:`No book found for the Category for ${req.params.category}`,});
     }
@@ -157,8 +168,13 @@ Methods        POST
 */
 shapeAI.post("/book/new", (req, res) => {
   const { newBook } = req.body; // Use lowercase for variable names
-  database.books.push(newBook); // Push an object with the new book data
-  return res.json({ books:database.books,message: "Book added successfully" }); // Send a response
+
+  const addNewBook = BookModels.create(newBook);
+  return res.json({ books : addNewBook , message: "Book added successfully" }); // Send a response
+
+  // Without Mongoose
+  // database.books.push(newBook); // Push an object with the new book data
+  // return res.json({ books:database.books,message: "Book added successfully" }); // Send a response
 });
 
 /*
