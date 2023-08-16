@@ -1,4 +1,5 @@
 const mongoose=require("mongoose");
+const { publications } = require(".");
 
 // Creating a Publication schema
 const PublicationSchema = mongoose.Schema({
@@ -9,7 +10,7 @@ const PublicationSchema = mongoose.Schema({
 
 // create a Publication model
 
-const PublicationModel=mongoose.model(PublicationSchema);
+const PublicationModel=mongoose.model("publications",PublicationSchema);
 
 // Export
 module.exports = PublicationModel;
