@@ -14,11 +14,15 @@ const shapeAI = express();
 shapeAI.use(express.json());
 
 // Establish Database Connection
-mongoose.connect(process.env.MONGO_URL,{
-  useFindAndModify: false,
-  useCreateIndex: true
-}
-).then(()=>console.log("Connection is established!!!!"));
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  // useFindAndModify: false, // This is still valid in Mongoose
+  // useCreateIndex: true,   // This is still valid in Mongoose
+})
+.then(() => console.log("MongoDB connected"))
+.catch(err => console.error("MongoDB connection error:", err));
+
 
 /*
 Route         / (root)
