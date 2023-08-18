@@ -124,8 +124,9 @@ Parameters     NONE
 Methods        GET
 */
 
-shapeAI.get("/author",(req,res)=>{
- return res.json({authors:database.authors});
+shapeAI.get("/author",async (req,res)=>{
+  const getAllAuthors= await AuthorModels.find(); //one line for mongo DB
+ return res.json({authors:database.authors});    //database.authors with getAllAuthors
 });
 
 /*
@@ -166,11 +167,11 @@ Access         PUBLIC
 Parameters     NONE
 Methods        POST
 */
-shapeAI.post("/book/new", (req, res) => {
+shapeAI.post("/book/new", async (req, res) => {
   const { newBook } = req.body; // Use lowercase for variable names
 
   const addNewBook = BookModels.create(newBook);
-  return res.json({ books : addNewBook , message: "Book added successfully" }); // Send a response
+  return res.json({message: "Book added successfully" }); // Send a response
 
   // Without Mongoose
   // database.books.push(newBook); // Push an object with the new book data
@@ -186,7 +187,9 @@ Methods        POST
 */
 shapeAI.post("/author/new", (req, res) => {
   const { newAuthor } = req.body; // Use lowercase for variable names
-  database.authors.push(newAuthor); // Push an object with the new author data
+  AuthorModels.create(newAuthor);
+  // withoutMongoDb
+  // database.authors.push(newAuthor); // Push an object with the new author data
   return res.json({ authors:database.authors,message: "Author Added Successfully" }); // Send a response
 });
 
