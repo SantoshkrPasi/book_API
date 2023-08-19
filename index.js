@@ -213,15 +213,29 @@ Access         PUBLIC
 Parameters     :isbn
 Methods        PUT
 */
-shapeAI.put("/book/update/:isbn",(req,res)=>{
-  database.books.forEach((book)=>{
-    if(book.ISBN==req.params.isbn)
+shapeAI.put("/book/update/:isbn", async (req,res)=>{
+
+   const updatedBook = await BookModels.findOneAndUpdate(
     {
-      book.title=req.body.bookTitle;
-      return;
+      ISBN : req.params.isbn,
+    },
+    {
+     title : req.body.bookTitle,
+    },
+    {
+      new : true,  //if not given true it will update but not shows the updated data
     }
-  });
-  return res.json({books:database.books});
+   );
+   return res.json({ books : updatedBook });
+  // Without Mongoose
+  // database.books.forEach((book)=>{
+  //   if(book.ISBN==req.params.isbn)
+  //   {
+  //     book.title=req.body.bookTitle;
+  //     return;
+  //   }
+  // });
+  // return res.json({books:database.books});
 });
 
 /*
@@ -232,18 +246,54 @@ Parameters     :isbn
 Methods        PUT
 */
 
-shapeAI.put("/book/author/update/:isbn",(req,res)=>{
-  // update book database
-   database.books.forEach((book)=>{
-    if(book.ISBN===req.params.isbn)
-    return book.authors.push(req.body.newAuthor);
-   });
-  // update author database
-  database.authors.forEach((author)=>{
-    if(author.id===req.body.newAuthor)
-    return author.books.push(req.params.isbn);
-  });
-  return res.json({books:database.books,authors:database.authors,message:"New Author was Added",});
+shapeAI.put("/book/author/update/:isbn", async (req,res)=>{
+
+  // update the book database
+  const updatedBook = await BookModels.findOneAndUpdate(
+    {
+      ISBN: req.params.isbn,
+    },
+    {
+      $push: {
+        authors: req.body.newAuthor,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+// update author database
+const updatedAuthor = await AuthorModels.findOneAndUpdate(
+  {
+   id: req.body.newAuthor,
+  },
+  {
+    $addToSet: {
+      books: req.params.isbn,
+    },
+  },
+  {
+    new: true,
+  }
+);
+
+return res.json({ books : updatedBook,
+                authors : updatedAuthor,
+                message : "New Author was Added",});
+
+    //  Without Mongoose
+  // update book database 
+  //  database.books.forEach((book)=>{
+  //   if(book.ISBN===req.params.isbn)
+  //   return book.authors.push(req.body.newAuthor);
+  //  });
+  // // update author database
+  // database.authors.forEach((author)=>{
+  //   if(author.id===req.body.newAuthor)
+  //   return author.books.push(req.params.isbn);
+  // });
+  // return res.json({books:database.books,authors:database.authors,message:"New Author was Added",});
 });
 
 /*
