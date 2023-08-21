@@ -4,13 +4,18 @@ require("dotenv").config();
 const express = require("express");
 const mongoose=require("mongoose");
 
-// Database
-const database = require("./databases/index");
+// // Database
+// const database = require("./databases/index");
 
-// Models
-const BookModels = require("./databases/book");
-const AuthorModels = require("./databases/author"); 
-const PublicationModels = require("./databases/publication"); 
+// // Models
+// const BookModels = require("./databases/book");
+// const AuthorModels = require("./databases/author"); 
+// const PublicationModels = require("./databases/publication"); 
+
+// Microservices Routes
+const Books = require("./API/Book");
+const Authors = require("./API/Author");
+const Publications = require("./API/Publication");
 
 // const { Mongoose } = require("mongoose");
 
@@ -29,6 +34,11 @@ mongoose.connect(process.env.MONGO_URL, {
 })
 .then(() => console.log("MongoDB connected"))
 .catch(err => console.error("MongoDB connection error:", err));
+
+// Initializing Microservices
+shapeAI.use("/book", Books);
+shapeAI.use("/author", Authors);
+shapeAI.use("/publication", Publications);
 
 
 /*
